@@ -1,0 +1,538 @@
+swagger: "2.0"
+info:
+  description: "Airline Booking API"
+  version: "1.0.0"
+  title: "Utopia Airlines"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "jonathan.lovelace@smoothstack.com"
+host: "utopia.swagger.io"
+basePath: "/v2"
+tags:
+- name: "user"
+  description: "User Details"
+- name: "airport"
+  description: "Airport Names"
+- name: "flight"
+  description: "Flight Details"
+- name: "seat"
+  description: "Seats within a flight"
+- name: "ticket"
+  description: "Reservation(s) of specific seat(s)"
+schemes:
+- "https"
+- "http"
+paths:
+  /airports:
+    get:
+      tags:
+      - "airport"
+      summary: "The list of all airport codes and the airports they represent"
+      operationId: "getAllAirports"
+      produces:
+      - "application/json"
+      - "application/xml"
+      responses:
+        200:
+          description: "always successful"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Airport"
+  /airport/{code}:
+    get:
+      tags:
+      - "airport"
+      summary: "Find airport by code"
+      description: "Returns a single airport"
+      operationId: "getAirportByCode"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "code"
+        in: "path"
+        description: "Airport code for airport to return"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Airport"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Airport not found"
+  /flights:
+    get:
+      tags:
+      - "flight"
+      summary: "Returns list of flights"
+      description: "Returns a list of all flights in the database"
+      operationId: "getFlights"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Flight"
+  /flight/{flightId}:
+    get:
+      tags:
+      - "flight"
+      summary: "Get details of a flight"
+      description: "Returns full details of a given flight"
+      operationId: "getFlightById"
+      produces:
+      - "application/json"
+      - "application/xml"
+      parameters:
+      - name: "flightId"
+        in: "path"
+        description: "Flight number of flight to query"
+        required: true
+        type: "number"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            $ref: "#/definitions/Flight"
+        400:
+          description: "Invalid Flight"
+        404:
+          description: "No Such Flight"
+  /flight/{flightId}/seats:
+    get:
+      tags:
+      - "flight"
+      - "seat"
+      summary: "Seats within a flight"
+      description: "List of all seats in a given flight"
+      operationId: "getSeatsInFlight"
+      parameters:
+      - name: "flightId"
+        in: "path"
+        description: "Flight number of flight to query"
+        required: true
+        type: "number"
+      produces:
+      - "application/json"
+      - "application/xml"
+      responses:
+        200:
+          description: "Successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Seat"
+  /flight/{flightId}/seat/{row}/{seatId}:
+    get:
+      tags:
+      - "seat"
+      summary: "Basic details of a seat on a flight"
+      operationId: "getSeatDetails"
+      parameters:
+      - name: "flightId"
+        in: "path"
+        description: "Flight this seat is on"
+        required: true
+        type: "number"
+      - name: "row"
+        in: "path"
+        description: "Row of the seat in the airplane"
+        type: "number"
+        required: true
+      - name: "seatId"
+        in: "path"
+        description: "Position of the seat in the row"
+        required: true
+        type: "string"
+      produces:
+      - "application/json"
+      - "application/xml"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Seat"
+        400:
+          description: "Invalid parameters"
+        404:
+          description: "Seat not found"
+  /flight/{flightId}/seat/{row}/{seatId}/ticket:
+    get:
+      tags:
+      - "ticket"
+      summary: "Reservation details for a seat"
+      description: "Reservation details for a specific seat"
+      operationId: "getTicketDetails"
+      parameters:
+      - name: "flightId"
+        in: "path"
+        description: "Flight this seat is on"
+        required: true
+        type: "number"
+      - name: "row"
+        in: "path"
+        description: "Row of the seat in the airplane"
+        type: "number"
+        required: true
+      - name: "seatId"
+        in: "path"
+        description: "Position of the seat in the row"
+        required: true
+        type: "string"
+      produces:
+      - "application/json"
+      - "application/xml"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Seat"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Permission Denied"
+        400:
+          description: "Invalid parameters"
+        404:
+          description: "Seat not found"
+    put:
+      tags:
+      - "ticket"
+      summary: "Update reservation details"
+      description: "Update reservation details to extend payment window or mark accepted payment"
+      operationId: "updateReservationDetails"
+      parameters:
+      - name: "flightId"
+        in: "path"
+        description: "Flight this seat is on"
+        required: true
+        type: "number"
+      - name: "row"
+        in: "path"
+        description: "Row of the seat in the airplane"
+        type: "number"
+        required: true
+      - name: "seatId"
+        in: "path"
+        description: "Position of the seat in the row"
+        required: true
+        type: "string"
+      - name: "body"
+        in: "body"
+        description: "Updated reservation details"
+        required: true
+        schema:
+          $ref: "#/definitions/Seat" # should we make a separate type for "ticket"?
+      produces:
+      - "application/json"
+      - "application/xml"
+      responses: # Should we list 409 here as well?
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Seat"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Permission Denied"
+        400:
+          description: "Invalid parameters"
+        404:
+          description: "Seat not found"
+        410:
+          description: "Reservation has expired"
+    post:
+      tags:
+      - "ticket"
+      summary: "Make reservation"
+      operationId: "makeReservation"
+      parameters:
+      - name: "flightId"
+        in: "path"
+        description: "Flight this seat is on"
+        required: true
+        type: "number"
+      - name: "row"
+        in: "path"
+        description: "Row of the seat in the airplane"
+        type: "number"
+        required: true
+      - name: "seatId"
+        in: "path"
+        description: "Position of the seat in the row"
+        required: true
+        type: "string"
+      - name: "body"
+        in: "body"
+        description: "Reservation details"
+        required: true
+        schema:
+          $ref: "#/definitions/Seat" # should we make a separate type for "ticket"?
+      produces:
+      - "application/json"
+      - "application/xml"
+      responses:
+        201: # Need to remember to pass this URL as Location field
+          description: "Reservation Created"
+          schema:
+            $ref: "#/definitions/Seat"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Permission denied"
+        404:
+          description: "Seat not found"
+        409:
+          description: "Seat already booked"
+    delete:
+      tags:
+      - "ticket"
+      summary: "Cancel reservation"
+      description: "Cancel reservation, triggering refund if the user had paid"
+      operationId: "cancelReservation"
+      parameters:
+      - name: "flightId"
+        in: "path"
+        description: "Flight this seat is on"
+        required: true
+        type: "number"
+      - name: "row"
+        in: "path"
+        description: "Row of the seat in the airplane"
+        type: "number"
+        required: true
+      - name: "seatId"
+        in: "path"
+        description: "Position of the seat in the row"
+        required: true
+        type: "string"
+      responses:
+        204:
+          description: "Reservation deleted" # or not present to begin with: DELETE is idempotent
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Permission denied"
+  /booking/{bookingCode}:
+    get:
+      tags:
+      - "ticket"
+      summary: "Reservation details for a ticket"
+      operationId: "getBookingDetails"
+      parameters:
+      - name: "bookingCode"
+        in: "path"
+        description: "Booking code, derived from flight, seat, and user ID"
+        required: true
+        type: "string"
+      produces:
+      - "application/json"
+      - "application/xml"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Seat"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Permission Denied"
+        400:
+          description: "Invalid parameters"
+        404:
+          description: "Seat not found"
+    put:
+      tags:
+        - "ticket"
+      summary: "Update reservation details"
+      description: "Update reservation details to extend payment window or mark accepted payment"
+      operationId: "updateBookingDetails"
+      parameters:
+      - name: "bookingCode"
+        in: "path"
+        description: "Booking code, derived from flight, seat, and user ID"
+        required: true
+        type: "string"
+      - name: "body"
+        in: "body"
+        description: "Updated reservation details"
+        required: true
+        schema:
+          $ref: "#/definitions/Seat" # should we make a separate type for "ticket"?
+      produces:
+      - "application/json"
+      - "application/xml"
+      responses: # Should we list 409 here as well?
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Seat"
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Permission Denied"
+        400:
+          description: "Invalid parameters"
+        404:
+          description: "Seat not found"
+        410:
+          description: "Reservation has expired"
+    delete:
+      tags:
+      - "ticket"
+      summary: "Cancel reservation"
+      description: "Cancel reservation, triggering refund if the user had paid"
+      operationId: "cancelBooking"
+      parameters:
+      - name: "bookingCode"
+        in: "path"
+        description: "Booking code, derived from flight, seat, and user ID"
+        required: true
+        type: "string"
+      responses:
+        204:
+          description: "Reservation deleted" # or not present to begin with: DELETE is idempotent
+        401:
+          description: "Unauthorized"
+        403:
+          description: "Permission denied"
+  /user/login:
+    post:
+      tags:
+      - "user"
+      summary: "Logs user into the system"
+      operationId: "loginUser"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "body"
+        in: "body"
+        description: "The user name and password for login"
+        required: true
+        schema:
+          $ref: "#/definitions/UserLogin"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "string"
+          headers:
+            X-Rate-Limit:
+              type: "integer"
+              format: "int32"
+              description: "calls per hour allowed by the user"
+            X-Expires-After:
+              type: "string"
+              format: "date-time"
+              description: "date in UTC when token expires"
+        400:
+          description: "Invalid username/password supplied"
+  /user/logout:
+    post:
+      tags:
+      - "user"
+      summary: "Logs out current logged in user session"
+      description: ""
+      operationId: "logoutUser"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+definitions:
+  Airport:
+    type: "object"
+    required:
+    - "code"
+    properties:
+      code:
+        type: "string"
+      name:
+        type: "string"
+  AirportAtTime:
+    type: "object"
+    required:
+    - "airport"
+    - "time"
+    properties:
+      airport:
+        $ref: "#/definitions/Flight"
+      time:
+        type: "string"
+        format: "date-time"
+  Flight:
+    type: "object"
+    required:
+    - "number"
+    properties:
+      number:
+        type: "integer"
+        format: "int64"
+      departure:
+        $ref: "#/definitions/AirportAtTime"
+      destination:
+        $ref: "#/definitions/AirportAtTime"
+  Seat:
+    type: "object"
+    required:
+    - "flight"
+    - "row"
+    - "seat"
+    - "reserved"
+    properties:
+      flight:
+        $ref: "#/definitions/Flight"
+      row:
+        type: "integer"
+      seat:
+        type: "string"
+      class:
+        type: "number"
+      reserved:
+        type: boolean
+      reserver:
+        $ref: "#/definitions/User"
+      price_paid:
+        type: number
+      reservation_timeout:
+        type: string
+        format: "date-time"
+  UserLogin:
+    type: "object"
+    required:
+    - "username"
+    - "password"
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+        format: "password"
+  User:
+    type: "object"
+    required:
+    - "id"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      username:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+      displayName:
+        type: "string"
+    xml:
+      name: "User"
