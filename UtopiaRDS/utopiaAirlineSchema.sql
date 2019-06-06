@@ -19,17 +19,22 @@ CREATE TABLE `tbl_flights` (
   KEY `departure_idx` (`departure`),
   KEY `destination_idx` (`destination`),
   CONSTRAINT `departure` FOREIGN KEY (`departure`) REFERENCES `tbl_airports` (`code`),
-  CONSTRAINT `destination` FOREIGN KEY (`destination`) REFERENCES `tbl_airports` (`code`)
+  CONSTRAINT `destination` FOREIGN KEY (`destination`) REFERENCES `tbl_airports` (`code`),
+  CONSTRAINT `departure!=destination` CHECK ('departure' != 'destination'),
+  CONSTRAINT `departure_date<destination_date` CHECK ('departure_date' < 'destination_date')
 );
 
 CREATE TABLE `tbl_users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(45) NOT NULL,
-  `password` varchar(255) NOT NULL,
+  `username` varchar(45),
+  `password` varchar(255),
   `display_name` varchar(45) DEFAULT NULL,
   `role` int(11) NOT NULL,
+  `email` varchar(45),
+  `phone` varchar(15),
   PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  CONSTRAINT `identifier_exists` CHECK (('username' IS NOT NULL) OR ('email' IS NOT NULL) OR ('phone' IS NOT NULL))
 );
 
 CREATE TABLE `tbl_tickets` (
@@ -43,5 +48,9 @@ CREATE TABLE `tbl_tickets` (
   PRIMARY KEY (`flight`,`row`,`seat`),
   KEY `reserver_idx` (`reserver`),
   CONSTRAINT `flight` FOREIGN KEY (`flight`) REFERENCES `tbl_flights` (`id`),
-  CONSTRAINT `reserver` FOREIGN KEY (`reserver`) REFERENCES `tbl_users` (`id`)
+  CONSTRAINT `reserver` FOREIGN KEY (`reserver`) REFERENCES `tbl_users` (`id`),
+  CONSTRAINT `reserved_check` CHECK ( ('reserver' IS NULL AND 'price' IS NULL AND 'reservation' IS NULL)
+  OR ('reserver' IS NOT NULL AND 'price' IS NOT NULL AND 'reservation_timeout' IS NULL)
+  OR ('reserver' IS NOT NULL AND 'price' IS NULL AND 'reservation_timeout' IS NOT NULL) )
 );
+
