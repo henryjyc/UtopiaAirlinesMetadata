@@ -45,12 +45,14 @@ CREATE TABLE `tbl_tickets` (
   `reserver` int(11) DEFAULT NULL,
   `price` int(11) DEFAULT NULL,
   `reservation_timeout` datetime DEFAULT NULL,
+  `booking_id` VARCHAR(45) DEFAULT NULL,
   PRIMARY KEY (`flight`,`row`,`seat`),
   KEY `reserver_idx` (`reserver`),
   CONSTRAINT `flight` FOREIGN KEY (`flight`) REFERENCES `tbl_flights` (`id`),
   CONSTRAINT `reserver` FOREIGN KEY (`reserver`) REFERENCES `tbl_users` (`id`),
   CONSTRAINT `reserved_check` CHECK ( (`reserver` IS NULL AND `price` IS NULL AND `reservation_timeout` IS NULL)
   OR (`reserver` IS NOT NULL AND `price` IS NOT NULL AND `reservation_timeout` IS NULL)
-  OR (`reserver` IS NOT NULL AND `price` IS NULL AND `reservation_timeout` IS NOT NULL) )
+  OR (`reserver` IS NOT NULL AND `price` IS NULL AND `reservation_timeout` IS NOT NULL) ),
+  CONSTRAINT `booking_id_check` CHECK ((`reserver` IS NULL AND `booking_id` IS NULL) OR (`reserver` IS NOT NULL AND `booking_id` IS NOT NULL))
 );
 
